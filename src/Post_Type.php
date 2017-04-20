@@ -2,8 +2,13 @@
 
 namespace Torounit\WP;
 
+/**
+ * Class Post_Type
+ *
+ * @package Torounit\WP
+ */
 
-Class Post_Type {
+class Post_Type {
 
 	/** @var string */
 	private $post_type;
@@ -15,19 +20,19 @@ Class Post_Type {
 	/** @var array */
 	private $args;
 
-		/** @var array */
+	/** @var array */
 	private $labels;
 
 	/**
-	 * @param string $post_type
-	 * @param string $post_type_name
-	 * @param array $args
+	 * @param string $post_type post type name slug.
+	 * @param string $post_type_name name for label.
+	 * @param array  $args
 	 */
 	public function __construct( $post_type, $post_type_name, $args = array() ) {
 		$this->post_type      = $post_type;
 		$this->post_type_name = $post_type_name;
 
-		$labels = ( !empty($args['labels']) ) ? $args['labels'] : array();
+		$labels = ( ! empty( $args['labels'] ) ) ? $args['labels'] : array();
 		$this->set_labels( $labels );
 		$this->set_options( $args );
 		$this->init();
@@ -38,7 +43,7 @@ Class Post_Type {
 	 */
 	public function init() {
 
-		add_action( 'init', array( $this, 'register_post_type' ), 10 );
+		$this->register_post_type();
 		add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ) );
 	}
 
@@ -78,7 +83,7 @@ Class Post_Type {
 			'search_items'       => $this->post_type_name . 'を検索',
 			'not_found'          => $this->post_type_name . 'が見つかりませんでした。',
 			'not_found_in_trash' => 'ゴミ箱の中から、' . $this->post_type_name . 'が見つかりませんでした。',
-			'menu_name'          => $this->post_type_name
+			'menu_name'          => $this->post_type_name,
 		);
 
 		return array_merge( $defaults, $args );
@@ -94,7 +99,6 @@ Class Post_Type {
 	}
 
 	/**
-	 *
 	 * Create Options.
 	 *
 	 * @param $args
@@ -112,49 +116,46 @@ Class Post_Type {
 			'rewrite'           => array(
 				'with_front' => false,
 				'slug'       => $this->post_type,
-				'walk_dirs'  => false
+				'walk_dirs'  => false,
 			),
 			'supports'          => array(
 				'title',
 				'author',
-				"editor",
+				'editor',
 				'excerpt',
 				'revisions',
-			)
+				'thumbnail'
+			),
 		);
 
+		$args = array_merge( $defaults, $args );
 
-		if ( empty( $args['rewrite']['walk_dirs'] ) ) {
+		if ( $args['rewrite'] && empty( $args['rewrite']['walk_dirs'] ) ) {
 			$args['rewrite']['walk_dirs'] = false;
 		}
 
-		return array_merge( $defaults, $args );
+		return $args;
+
 	}
 
 	/**
-	 *
 	 * Regiser Post Type.
-	 *
 	 */
 	public function register_post_type() {
-
 		$this->args['labels'] = $this->labels;
 		register_post_type( $this->post_type, $this->args );
 	}
 
 
 	/**
-	 *
 	 * Default order to menu_order in admin.
 	 *
 	 * @param \WP_Query $query
-	 *
 	 */
 	public function pre_get_posts( \WP_Query $query ) {
 
 		if ( $query->is_main_query() and is_admin() ) {
 			if ( $query->get( 'post_type' ) == $this->get_post_type() ) {
-
 
 				if ( post_type_supports( $this->get_post_type(), 'page-attributes' ) ) {
 
@@ -170,15 +171,6 @@ Class Post_Type {
 		}
 	}
 
-
 }
-
-
-
-
-
-
-
-
 
 
